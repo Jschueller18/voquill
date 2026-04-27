@@ -22,6 +22,8 @@ npm run dev:linux        # Linux
 
 > **Note:** Do not use `npm run dev` directly—use the platform-specific commands above.
 
+**Hosted Firebase (voquill-dev)** — If you are **not** running the local Firebase emulator suite (default `emulators` mode talks to `localhost:9099` for Auth), use the `:hosted` scripts so sign-in uses the **hosted dev** project: `dev:mac:hosted`, `dev:windows:hosted`, or `dev:linux:hosted` (sets `VITE_FLAVOR=dev`, see `.env.dev`).
+
 ### Build & Quality
 
 ```bash

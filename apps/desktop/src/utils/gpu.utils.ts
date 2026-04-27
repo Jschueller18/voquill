@@ -4,8 +4,9 @@ import { GpuInfo } from "../types/gpu.types";
 let cachedDiscreteGpus: GpuInfo[] | null = null;
 let loadingDiscreteGpus: Promise<GpuInfo[]> | null = null;
 
-const filterDiscreteGpus = (gpu: GpuInfo) =>
-  gpu.backend === "Vulkan" && gpu.deviceType === "DiscreteGpu";
+const filterUsableVulkanGpus = (gpu: GpuInfo) =>
+  gpu.backend === "Vulkan" &&
+  (gpu.deviceType === "DiscreteGpu" || gpu.deviceType === "IntegratedGpu");
 
 export const loadDiscreteGpus = async (): Promise<GpuInfo[]> => {
   if (cachedDiscreteGpus) {
@@ -15,9 +16,9 @@ export const loadDiscreteGpus = async (): Promise<GpuInfo[]> => {
   if (!loadingDiscreteGpus) {
     loadingDiscreteGpus = invoke<GpuInfo[]>("list_gpus")
       .then((gpuList) => {
-        const discrete = gpuList.filter(filterDiscreteGpus);
-        cachedDiscreteGpus = discrete;
-        return discrete;
+        const usable = gpuList.filter(filterUsableVulkanGpus);
+        cachedDiscreteGpus = usable;
+        return usable;
       })
       .catch((error) => {
         console.error("Failed to load GPU descriptors", error);

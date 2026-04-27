@@ -23,7 +23,9 @@ export const useSupportedDiscreteGpus = (active: boolean) => {
         console.log("[gpu] Raw GPU list:", gpuList);
         const supported = gpuList.filter(
           (info) =>
-            info.backend === "Vulkan" && info.deviceType === "DiscreteGpu",
+            info.backend === "Vulkan" &&
+            (info.deviceType === "DiscreteGpu" ||
+              info.deviceType === "IntegratedGpu"),
         );
         console.log("[gpu] Filtered GPUs:", supported);
         if (!cancelled) {

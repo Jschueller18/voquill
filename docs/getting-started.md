@@ -74,7 +74,16 @@ npm run dev:linux --workspace apps/desktop
 npm run dev:linux:gpu --workspace apps/desktop
 ```
 
-During local development you can override platform detection by exporting `VOQUILL_DESKTOP_PLATFORM` (`darwin`, `win32`, or `linux`). The desktop dev journey now defaults to the `emulators` flavor (`apps/desktop/.env.emulators`) so that `turbo dev` and the workspace dev scripts point at the Firebase emulator suite; pass `FLAVOR=dev` or `VITE_FLAVOR=dev` when you explicitly want the hosted dev project. Set `VITE_USE_EMULATORS=true` to point at Firebase emulators (this is already true in the emulator flavor).
+**Hosted dev Firebase (no local Auth emulator):** if you are not running the Auth emulator on `localhost:9099`, use the `:hosted` script so the app uses `VITE_FLAVOR=dev` (see `apps/desktop/.env.dev`):
+
+```sh
+# Windows (pnpm: use --filter desktop)
+pnpm --filter desktop run dev:windows:hosted
+```
+
+Same pattern: `dev:mac:hosted`, `dev:linux:hosted`.
+
+During local development you can override platform detection by exporting `VOQUILL_DESKTOP_PLATFORM` (`darwin`, `win32`, or `linux`). The desktop dev journey now defaults to the `emulators` flavor (`apps/desktop/.env.emulators`) so that `turbo dev` and the workspace dev scripts point at the Firebase emulator suite; pass `FLAVOR=dev` or `VITE_FLAVOR=dev` (or the `:hosted` scripts above) when you explicitly want the hosted dev project. Set `VITE_USE_EMULATORS=true` to point at Firebase emulators (this is already true in the emulator flavor).
 
 ### Running on Windows
 
@@ -83,8 +92,14 @@ During local development you can override platform detection by exporting `VOQUI
 # (Skip this if you're already in "Developer PowerShell for VS 2022")
 & "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
 
-# (Optional but recommended) shorten build paths on Windows
-$env:CARGO_TARGET_DIR = 'C:\cargo'
+# Optional: override the default short Cargo output dir used by `prepare:sidecars`
+# on Windows (defaults to %USERPROFILE%\.voquill\cargo-target to avoid MAX_PATH).
+# $env:CARGO_TARGET_DIR = 'C:\cargo'
+# $env:VOQUILL_CARGO_TARGET_ROOT = 'C:\vb'
+
+# Native local Whisper GPU on Windows requires Vulkan SDK: set VULKAN_SDK to the
+# SDK root (e.g. after installing via winget: KhronosGroup.VulkanSDK), then run
+# `pnpm run prepare:sidecars` from apps/desktop.
 
 # 3) Build
 npm run dev

@@ -2,6 +2,7 @@
 
 import { spawnSync } from "node:child_process";
 import { chmodSync, copyFileSync, existsSync, mkdirSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -14,6 +15,26 @@ const sidecarManifestPath = join(
   "rust_transcription",
   "Cargo.toml",
 );
+
+/** Avoid MAX_PATH failures (e.g. whisper-sys + Vulkan under long OneDrive paths). */
+function ensureWindowsShortCargoTargetEnv() {
+  if (process.platform !== "win32") {
+    return;
+  }
+  if (process.env.CARGO_TARGET_DIR?.trim()) {
+    return;
+  }
+
+  const root =
+    process.env.VOQUILL_CARGO_TARGET_ROOT?.trim() || join(homedir(), ".voquill");
+  const dir = join(root, "cargo-target");
+
+  mkdirSync(dir, { recursive: true });
+  process.env.CARGO_TARGET_DIR = dir;
+}
+
+ensureWindowsShortCargoTargetEnv();
+
 const cargoTargetDirOverride = process.env.CARGO_TARGET_DIR?.trim() || null;
 const rustTargetDir = cargoTargetDirOverride
   ? isAbsolute(cargoTargetDirOverride)
