@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "prepare:workspace-packages": "pnpm --filter @voquill/desktop-utils run build",
+    "prepare:workspace-packages": "pnpm --filter @voquill/desktop-utils --filter @voquill/voice-ai run build",
     "prepare:sidecars": "node scripts/prepare-sidecars.mjs",
     "dev": "node scripts/select-platform-dev.mjs",
     "dev:mac": "cross-env TAURI_PLATFORM=macos pnpm run dev:tauri",
