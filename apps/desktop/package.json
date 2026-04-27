@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "prepare:workspace-packages": "pnpm --filter @voquill/desktop-utils run build",
     "prepare:sidecars": "node scripts/prepare-sidecars.mjs",
     "dev": "node scripts/select-platform-dev.mjs",
     "dev:mac": "cross-env TAURI_PLATFORM=macos pnpm run dev:tauri",
@@ -12,10 +13,10 @@
     "dev:windows:hosted": "cross-env TAURI_PLATFORM=windows VITE_FLAVOR=dev pnpm run dev:tauri",
     "dev:linux": "cross-env TAURI_PLATFORM=linux pnpm run dev:tauri",
     "dev:linux:hosted": "cross-env TAURI_PLATFORM=linux VITE_FLAVOR=dev pnpm run dev:tauri",
-    "dev:tauri": "pnpm run prepare:sidecars && node -e \"const c=process.env.TAURI_DEV_CONFIG||'src-tauri/tauri.local.conf.json';require('child_process').execSync('pnpm tauri dev --config '+c,{stdio:'inherit'})\"",
-    "dev:vite": "node scripts/run-vite-with-flavor.mjs dev",
-    "build": "tsc && node scripts/run-vite-with-flavor.mjs build",
-    "preview": "node scripts/run-vite-with-flavor.mjs preview",
+    "dev:tauri": "pnpm run prepare:workspace-packages && pnpm run prepare:sidecars && node -e \"const c=process.env.TAURI_DEV_CONFIG||'src-tauri/tauri.local.conf.json';require('child_process').execSync('pnpm tauri dev --config '+c,{stdio:'inherit'})\"",
+    "dev:vite": "pnpm run prepare:workspace-packages && node scripts/run-vite-with-flavor.mjs dev",
+    "build": "pnpm run prepare:workspace-packages && tsc && node scripts/run-vite-with-flavor.mjs build",
+    "preview": "pnpm run prepare:workspace-packages && node scripts/run-vite-with-flavor.mjs preview",
     "tauri": "node scripts/run-tauri-with-sidecars.mjs",
     "test:webdriver": "wdio run webdriver/wdio.conf.js",
     "i18n:extract": "node ./scripts/i18n-extract-with-prune.mjs",
@@ -23,10 +24,10 @@
     "i18n": "pnpm run i18n:extract && pnpm run i18n:sync",
     "lint:fix": "prettier --write src && oxlint --fix src",
     "lint": "prettier --check src && oxlint src",
-    "test": "vitest run",
-    "test:unit": "vitest run src",
-    "test:integration": "vitest run test/integration",
-    "test:evals": "vitest run test/evals"
+    "test": "pnpm run prepare:workspace-packages && vitest run",
+    "test:unit": "pnpm run prepare:workspace-packages && vitest run src",
+    "test:integration": "pnpm run prepare:workspace-packages && vitest run test/integration",
+    "test:evals": "pnpm run prepare:workspace-packages && vitest run test/evals"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
