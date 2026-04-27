@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Desktop: Windows (hosted / dev Firebase)",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "pnpm@10.11.0",
+        "--filter",
+        "desktop",
+        "run",
+        "dev:windows:hosted"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {}
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Desktop: Windows (local emulators)",
+      "type": "shell",
+      "command": "npx",
+      "args": ["pnpm@10.11.0", "--filter", "desktop", "run", "dev:windows"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "group": "build"
+    }
+  ]
+}

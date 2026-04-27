@@ -2,6 +2,8 @@
   "name": "voquill",
   "private": true,
   "scripts": {
+    "dev:desktop": "pnpm --filter desktop run dev:windows:hosted",
+    "dev:desktop:emulators": "pnpm --filter desktop run dev:windows",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
