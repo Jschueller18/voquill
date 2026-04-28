@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
-import { chmodSync, copyFileSync, existsSync, mkdirSync } from "node:fs";
+import {
+  chmodSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+} from "node:fs";
 import { homedir } from "node:os";
-import { dirname, isAbsolute, join, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -33,7 +39,95 @@ function ensureWindowsShortCargoTargetEnv() {
   process.env.CARGO_TARGET_DIR = dir;
 }
 
+/** If VULKAN_SDK is unset, pick the newest Vulkan SDK under standard Windows install roots. */
+function ensureWindowsVulkanSdkEnv() {
+  if (process.platform !== "win32") {
+    return;
+  }
+
+  const existing = process.env.VULKAN_SDK?.trim();
+  if (existing && existsSync(existing)) {
+    return;
+  }
+
+  const discovered = discoverVulkanSdkRootWindows();
+  if (discovered) {
+    process.env.VULKAN_SDK = discovered;
+    console.log(`[sidecar] Discovered VULKAN_SDK=${discovered}`);
+  }
+}
+
+function discoverVulkanSdkRootWindows() {
+  const programFiles = process.env["ProgramFiles"] || "C:\\Program Files";
+  const roots = [join(programFiles, "VulkanSDK"), "C:\\VulkanSDK"];
+
+  const marker = join("Include", "vulkan", "vulkan_core.h");
+
+  /** @type {string[]} */
+  const candidates = [];
+
+  for (const root of roots) {
+    if (!existsSync(root)) {
+      continue;
+    }
+    let entries;
+    try {
+      entries = readdirSync(root, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const ent of entries) {
+      if (!ent.isDirectory()) {
+        continue;
+      }
+      const full = join(root, ent.name);
+      if (existsSync(join(full, marker))) {
+        candidates.push(full);
+      }
+    }
+  }
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  candidates.sort((a, b) => compareVulkanSdkVersionDesc(basename(b), basename(a)));
+  return candidates[0];
+}
+
+/** Sort so higher version strings (e.g. 1.4.304.0) sort first; non-numeric names last. */
+function compareVulkanSdkVersionDesc(a, b) {
+  const va = parseVersionFolderName(a);
+  const vb = parseVersionFolderName(b);
+  if (!va && !vb) {
+    return 0;
+  }
+  if (!va) {
+    return 1;
+  }
+  if (!vb) {
+    return -1;
+  }
+  for (let i = 0; i < Math.max(va.length, vb.length); i++) {
+    const da = va[i] ?? 0;
+    const db = vb[i] ?? 0;
+    if (da !== db) {
+      return da - db;
+    }
+  }
+  return 0;
+}
+
+function parseVersionFolderName(name) {
+  const parts = name.split(".").map((p) => parseInt(p, 10));
+  if (parts.length === 0 || parts.some((n) => Number.isNaN(n))) {
+    return null;
+  }
+  return parts;
+}
+
 ensureWindowsShortCargoTargetEnv();
+ensureWindowsVulkanSdkEnv();
 
 const cargoTargetDirOverride = process.env.CARGO_TARGET_DIR?.trim() || null;
 const rustTargetDir = cargoTargetDirOverride
